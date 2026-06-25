@@ -2,31 +2,35 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from "re
 import { useState } from "react"
 
 const NAV = [
-  { path: "/", label: "Trang chủ" },
-  { path: "/upload", label: "Upload PDF" },
-  { path: "/sign", label: "Ký số" },
-  { path: "/verify", label: "Xác minh" },
-  { path: "/certificate", label: "Chứng thư" },
+  { path: "/upload", icon: "📄", label: "Upload PDF" },
+  { path: "/sign", icon: "✍️", label: "Ký số" },
+  { path: "/verify", icon: "🔍", label: "Xác minh" },
+  { path: "/certificate", icon: "📋", label: "Chứng thư" },
 ]
 
-function Navbar() {
+function Sidebar() {
   const location = useLocation()
   return (
-    <nav style={{ background: "#0f172a", padding: "0 32px", display: "flex", alignItems: "center", gap: 32, height: 56, borderBottom: "1px solid #1e293b" }}>
-      <span style={{ color: "white", fontWeight: 700, fontSize: 15, letterSpacing: "-0.3px", whiteSpace: "nowrap" }}>
-        Cổng Dịch Vụ Công
-      </span>
-      <div style={{ display: "flex", gap: 4 }}>
+    <div style={{ width: 220, minHeight: "100vh", background: "white", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 0" }}>
+      <Link to="/" style={{ textDecoration: "none", padding: "0 20px 24px", borderBottom: "1px solid #f1f5f9", display: "block" }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>Cổng Dịch Vụ Công</div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>NT219 — Mật Mã Ứng Dụng</div>
+      </Link>
+      <div style={{ padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
         {NAV.map(l => (
           <Link key={l.path} to={l.path} style={{
-            color: location.pathname === l.path ? "white" : "#94a3b8",
-            textDecoration: "none", fontSize: 13, fontWeight: location.pathname === l.path ? 600 : 400,
-            padding: "6px 12px", borderRadius: 6,
-            background: location.pathname === l.path ? "#1e293b" : "transparent"
-          }}>{l.label}</Link>
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "8px 12px", borderRadius: 8, textDecoration: "none",
+            fontSize: 13, fontWeight: location.pathname === l.path ? 600 : 400,
+            color: location.pathname === l.path ? "#1e40af" : "#475569",
+            background: location.pathname === l.path ? "#eff6ff" : "transparent",
+          }}>
+            <span>{l.icon}</span>
+            <span>{l.label}</span>
+          </Link>
         ))}
       </div>
-    </nav>
+    </div>
   )
 }
 
@@ -38,13 +42,15 @@ function Card({ children, style }) {
   )
 }
 
-function Btn({ children, onClick, disabled, variant = "primary", style }) {
-  const base = { padding: "9px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", border: "none", transition: "opacity .15s" }
-  const variants = {
-    primary: { background: disabled ? "#e2e8f0" : "#1e40af", color: disabled ? "#94a3b8" : "white" },
-    ghost: { background: "transparent", color: "#475569", border: "1px solid #e2e8f0" },
-  }
-  return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant], ...style }}>{children}</button>
+function Btn({ children, onClick, disabled, style }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      padding: "9px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+      cursor: disabled ? "not-allowed" : "pointer", border: "none",
+      background: disabled ? "#e2e8f0" : "#1e40af",
+      color: disabled ? "#94a3b8" : "white", width: "100%", ...style
+    }}>{children}</button>
+  )
 }
 
 function Badge({ children, color = "blue" }) {
@@ -54,7 +60,7 @@ function Badge({ children, color = "blue" }) {
     blue: { background: "#dbeafe", color: "#1e40af" },
     gray: { background: "#f1f5f9", color: "#475569" },
   }
-  return <span style={{ ...colors[color], fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, letterSpacing: "0.3px" }}>{children}</span>
+  return <span style={{ ...colors[color], fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20 }}>{children}</span>
 }
 
 function Row({ label, value }) {
@@ -69,26 +75,21 @@ function Row({ label, value }) {
 function Home() {
   const navigate = useNavigate()
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", paddingTop: 64 }}>
+    <div style={{ maxWidth: 680, paddingTop: 48 }}>
       <div style={{ marginBottom: 40 }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: "#1e40af", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>NT219 — Mật Mã Ứng Dụng</div>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0f172a", margin: "0 0 10px", lineHeight: 1.3 }}>Hệ thống chữ ký số<br />dịch vụ hành chính công</h1>
-        <p style={{ color: "#64748b", fontSize: 15, lineHeight: 1.6 }}>Ký số và xác minh tài liệu PDF sử dụng RSA-PSS 2048-bit + X.509</p>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0f172a", margin: "0 0 10px", lineHeight: 1.3 }}>Hệ thống chữ ký số<br />dịch vụ hành chính công</h1>
+        <p style={{ color: "#64748b", fontSize: 14, lineHeight: 1.6 }}>Ký số và xác minh tài liệu PDF sử dụng RSA-PSS 2048-bit + X.509</p>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {[
-          { path: "/upload", icon: "📄", title: "Upload PDF", desc: "Tải lên hồ sơ cần ký số" },
-          { path: "/sign", icon: "✍️", title: "Ký số", desc: "Ký tài liệu bằng RSA-PSS" },
-          { path: "/verify", icon: "🔍", title: "Xác minh", desc: "Kiểm tra chữ ký hợp lệ" },
-          { path: "/certificate", icon: "📋", title: "Chứng thư X.509", desc: "Xem thông tin certificate" },
-        ].map(item => (
+        {NAV.map(item => (
           <div key={item.path} onClick={() => navigate(item.path)} style={{
             background: "white", border: "1px solid #e2e8f0", borderRadius: 10,
             padding: "20px 22px", cursor: "pointer",
+            transition: "border-color .15s"
           }}>
             <div style={{ fontSize: 22, marginBottom: 8 }}>{item.icon}</div>
-            <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a", marginBottom: 4 }}>{item.title}</div>
-            <div style={{ fontSize: 13, color: "#64748b" }}>{item.desc}</div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a", marginBottom: 4 }}>{item.label}</div>
           </div>
         ))}
       </div>
@@ -100,7 +101,7 @@ function UploadPage() {
   const [file, setFile] = useState(null)
   const [uploaded, setUploaded] = useState(false)
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: 48 }}>
+    <div style={{ maxWidth: 500, paddingTop: 48 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Upload PDF</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Chọn file PDF hồ sơ cần ký số</p>
       <Card>
@@ -117,9 +118,7 @@ function UploadPage() {
           {!file && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>Chỉ chấp nhận .pdf</div>}
           <input type="file" accept=".pdf" onChange={e => { setFile(e.target.files[0]); setUploaded(false) }} style={{ display: "none" }} />
         </label>
-        <Btn onClick={() => setUploaded(true)} disabled={!file} style={{ width: "100%" }}>
-          Upload hồ sơ
-        </Btn>
+        <Btn onClick={() => setUploaded(true)} disabled={!file}>Upload hồ sơ</Btn>
         {uploaded && (
           <div style={{ marginTop: 16, padding: "12px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8 }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: "#166534", marginBottom: 4 }}>✓ Upload thành công</div>
@@ -134,7 +133,7 @@ function UploadPage() {
 function SignPage() {
   const [state, setState] = useState("idle")
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: 48 }}>
+    <div style={{ maxWidth: 500, paddingTop: 48 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Ký số tài liệu</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Ký PDF bằng RSA-PSS 2048-bit + SHA-256</p>
       <Card>
@@ -144,11 +143,7 @@ function SignPage() {
           <Row label="Chứng thư" value="0A:1B:2C:3D" />
           <Row label="Thuật toán" value="RSA-PSS 2048 + SHA-256" />
         </div>
-        <Btn
-          onClick={() => { setState("signing"); setTimeout(() => setState("done"), 2000) }}
-          disabled={state !== "idle"}
-          style={{ width: "100%" }}
-        >
+        <Btn onClick={() => { setState("signing"); setTimeout(() => setState("done"), 2000) }} disabled={state !== "idle"}>
           {state === "signing" ? "Đang ký..." : state === "done" ? "✓ Đã ký thành công" : "Ký số"}
         </Btn>
         {state === "done" && (
@@ -167,7 +162,7 @@ function VerifyPage() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: 48 }}>
+    <div style={{ maxWidth: 500, paddingTop: 48 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Xác minh chữ ký</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Upload file PDF đã ký để kiểm tra tính hợp lệ</p>
       <Card>
@@ -179,8 +174,7 @@ function VerifyPage() {
           <div style={{ fontSize: 13, color: "#64748b" }}>{file ? file.name : "Chọn file PDF đã ký"}</div>
           <input type="file" accept=".pdf" onChange={e => { setFile(e.target.files[0]); setResult(null) }} style={{ display: "none" }} />
         </label>
-        <Btn onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setResult("valid") }, 1500) }}
-          disabled={!file || loading} style={{ width: "100%" }}>
+        <Btn onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setResult("valid") }, 1500) }} disabled={!file || loading}>
           {loading ? "Đang xác minh..." : "Xác minh"}
         </Btn>
         {result === "valid" && (
@@ -196,15 +190,6 @@ function VerifyPage() {
             <Row label="Trạng thái cert" value="✓ Chưa thu hồi" />
           </div>
         )}
-        {result === "invalid" && (
-          <div style={{ marginTop: 16, padding: "14px 16px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <Badge color="red">INVALID</Badge>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#991b1b" }}>Chữ ký không hợp lệ</span>
-            </div>
-            <div style={{ fontSize: 13, color: "#64748b" }}>Tài liệu đã bị chỉnh sửa sau khi ký.</div>
-          </div>
-        )}
       </Card>
     </div>
   )
@@ -212,7 +197,7 @@ function VerifyPage() {
 
 function CertPage() {
   return (
-    <div style={{ maxWidth: 520, margin: "0 auto", paddingTop: 48 }}>
+    <div style={{ maxWidth: 500, paddingTop: 48 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Chứng thư số X.509</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Chi tiết certificate của người ký</p>
       <Card>
@@ -239,9 +224,9 @@ function CertPage() {
 export default function App() {
   return (
     <BrowserRouter>
-      <div style={{ minHeight: "100vh", background: "#f8fafc" }}>
-        <Navbar />
-        <div style={{ padding: "0 32px 64px" }}>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc" }}>
+        <Sidebar />
+        <div style={{ flex: 1, padding: "0 48px 64px" }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/upload" element={<UploadPage />} />
