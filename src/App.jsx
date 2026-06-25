@@ -11,16 +11,16 @@ const NAV = [
 function Sidebar() {
   const location = useLocation()
   return (
-    <div style={{ width: 220, minHeight: "100vh", background: "white", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column", padding: "24px 0" }}>
-      <Link to="/" style={{ textDecoration: "none", padding: "0 20px 24px", borderBottom: "1px solid #f1f5f9", display: "block" }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>Cổng Dịch Vụ Công</div>
-        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>NT219 — Mật Mã Ứng Dụng</div>
+    <div style={{ width: 240, minHeight: "100vh", background: "white", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column" }}>
+      <Link to="/" style={{ textDecoration: "none", padding: "20px 20px 16px", borderBottom: "1px solid #f1f5f9", display: "block", background: "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)" }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: "white" }}>🏛️ Cổng Dịch Vụ Công</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2 }}>NT219 — Mật Mã Ứng Dụng</div>
       </Link>
-      <div style={{ padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+      <div style={{ padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
         {NAV.map(l => (
           <Link key={l.path} to={l.path} style={{
             display: "flex", alignItems: "center", gap: 10,
-            padding: "8px 12px", borderRadius: 8, textDecoration: "none",
+            padding: "9px 12px", borderRadius: 8, textDecoration: "none",
             fontSize: 13, fontWeight: location.pathname === l.path ? 600 : 400,
             color: location.pathname === l.path ? "#1e40af" : "#475569",
             background: location.pathname === l.path ? "#eff6ff" : "transparent",
@@ -29,6 +29,13 @@ function Sidebar() {
             <span>{l.label}</span>
           </Link>
         ))}
+      </div>
+      <div style={{ padding: "16px 20px", borderTop: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "white", fontWeight: 700 }}>A</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>Nguyễn Văn A</div>
+          <div style={{ fontSize: 11, color: "#94a3b8" }}>Công dân</div>
+        </div>
       </div>
     </div>
   )
@@ -45,9 +52,9 @@ function Card({ children, style }) {
 function Btn({ children, onClick, disabled, style }) {
   return (
     <button onClick={onClick} disabled={disabled} style={{
-      padding: "9px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+      padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
       cursor: disabled ? "not-allowed" : "pointer", border: "none",
-      background: disabled ? "#e2e8f0" : "#1e40af",
+      background: disabled ? "#e2e8f0" : "linear-gradient(135deg, #1e40af, #3b82f6)",
       color: disabled ? "#94a3b8" : "white", width: "100%", ...style
     }}>{children}</button>
   )
@@ -72,21 +79,46 @@ function Row({ label, value }) {
   )
 }
 
+function StatCard({ icon, label, value, color }) {
+  const colors = {
+    blue: { bg: "#eff6ff", icon: "#1e40af", border: "#bfdbfe" },
+    green: { bg: "#f0fdf4", icon: "#166534", border: "#bbf7d0" },
+    purple: { bg: "#f5f3ff", icon: "#6d28d9", border: "#ddd6fe" },
+    amber: { bg: "#fffbeb", icon: "#92400e", border: "#fde68a" },
+  }
+  const c = colors[color] || colors.blue
+  return (
+    <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 12, padding: "20px 24px" }}>
+      <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: c.icon, marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "#64748b" }}>{label}</div>
+    </div>
+  )
+}
+
 function Home() {
   const navigate = useNavigate()
   return (
-    <div style={{ maxWidth: 680, paddingTop: 48 }}>
-      <div style={{ marginBottom: 40 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#1e40af", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>NT219 — Mật Mã Ứng Dụng</div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0f172a", margin: "0 0 10px", lineHeight: 1.3 }}>Hệ thống chữ ký số<br />dịch vụ hành chính công</h1>
+    <div style={{ paddingTop: 40, maxWidth: 860 }}>
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: "#1e40af", letterSpacing: "1px", textTransform: "uppercase", marginBottom: 10 }}>NT219 — Mật Mã Ứng Dụng</div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: "#0f172a", margin: "0 0 8px", lineHeight: 1.3 }}>Hệ thống chữ ký số<br />dịch vụ hành chính công</h1>
         <p style={{ color: "#64748b", fontSize: 14, lineHeight: 1.6 }}>Ký số và xác minh tài liệu PDF sử dụng RSA-PSS 2048-bit + X.509</p>
       </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 32 }}>
+        <StatCard icon="📄" label="Tài liệu đã ký" value="128" color="blue" />
+        <StatCard icon="✅" label="Xác minh thành công" value="124" color="green" />
+        <StatCard icon="👤" label="Người dùng" value="32" color="purple" />
+        <StatCard icon="🔐" label="Chứng thư hoạt động" value="18" color="amber" />
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {NAV.map(item => (
           <div key={item.path} onClick={() => navigate(item.path)} style={{
             background: "white", border: "1px solid #e2e8f0", borderRadius: 10,
             padding: "20px 22px", cursor: "pointer",
-            transition: "border-color .15s"
+            transition: "box-shadow .15s",
           }}>
             <div style={{ fontSize: 22, marginBottom: 8 }}>{item.icon}</div>
             <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a", marginBottom: 4 }}>{item.label}</div>
@@ -101,7 +133,7 @@ function UploadPage() {
   const [file, setFile] = useState(null)
   const [uploaded, setUploaded] = useState(false)
   return (
-    <div style={{ maxWidth: 500, paddingTop: 48 }}>
+    <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Upload PDF</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Chọn file PDF hồ sơ cần ký số</p>
       <Card>
@@ -133,7 +165,7 @@ function UploadPage() {
 function SignPage() {
   const [state, setState] = useState("idle")
   return (
-    <div style={{ maxWidth: 500, paddingTop: 48 }}>
+    <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Ký số tài liệu</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Ký PDF bằng RSA-PSS 2048-bit + SHA-256</p>
       <Card>
@@ -162,7 +194,7 @@ function VerifyPage() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   return (
-    <div style={{ maxWidth: 500, paddingTop: 48 }}>
+    <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Xác minh chữ ký</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Upload file PDF đã ký để kiểm tra tính hợp lệ</p>
       <Card>
@@ -197,17 +229,17 @@ function VerifyPage() {
 
 function CertPage() {
   return (
-    <div style={{ maxWidth: 500, paddingTop: 48 }}>
+    <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Chứng thư số X.509</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Chi tiết certificate của người ký</p>
       <Card>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #f1f5f9" }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
           <div>
             <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a" }}>Nguyễn Văn A</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>nguyenvana@citizen.vn</div>
           </div>
-          <Badge color="green" style={{ marginLeft: "auto" }}>Còn hiệu lực</Badge>
+          <Badge color="green">Còn hiệu lực</Badge>
         </div>
         <Row label="Subject" value="CN=Nguyễn Văn A, C=VN" />
         <Row label="Issuer" value="CN=Demo Root CA, O=UIT Lab" />
