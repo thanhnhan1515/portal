@@ -1,6 +1,68 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 
+const API = "https://localhost:3443"
+
+function LoginPage({ onLogin }) {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleLogin = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); setLoading(false); return }
+      localStorage.setItem("token", data.token)
+      localStorage.setItem("name", data.name)
+      localStorage.setItem("role", data.role)
+      onLogin(data)
+    } catch {
+      setError("Không kết nối được server!")
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "40px 36px", width: 360 }}>
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>🏛️</div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: "#0f172a" }}>Cổng Dịch Vụ Công</div>
+          <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>NT219 — Mật Mã Ứng Dụng</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Email</div>
+            <input value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="nguyenvana@citizen.vn"
+              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 13, boxSizing: "border-box" }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 4 }}>Mật khẩu</div>
+            <input value={password} onChange={e => setPassword(e.target.value)}
+              type="password" placeholder="••••••••"
+              style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 13, boxSizing: "border-box" }} />
+          </div>
+          {error && <div style={{ fontSize: 12, color: "#dc2626", background: "#fef2f2", padding: "8px 12px", borderRadius: 6 }}>{error}</div>}
+          <button onClick={handleLogin} disabled={loading} style={{
+            padding: "10px", borderRadius: 8, border: "none", fontSize: 13, fontWeight: 600,
+            background: "linear-gradient(135deg, #1e40af, #3b82f6)", color: "white", cursor: "pointer", marginTop: 4
+          }}>
+            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 const NAV = [
   { path: "/upload", icon: "📄", label: "Upload PDF" },
   { path: "/sign", icon: "✍️", label: "Ký số" },
@@ -8,7 +70,7 @@ const NAV = [
   { path: "/certificate", icon: "📋", label: "Chứng thư" },
 ]
 
-function Sidebar() {
+function Sidebar({ user, onLogout }) {
   const location = useLocation()
   return (
     <div style={{ width: 240, minHeight: "100vh", background: "white", borderRight: "1px solid #e2e8f0", display: "flex", flexDirection: "column" }}>
@@ -30,17 +92,24 @@ function Sidebar() {
           </Link>
         ))}
       </div>
-      <div style={{ padding: "16px 20px", borderTop: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "white", fontWeight: 700 }}>A</div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>Nguyễn Văn A</div>
-          <div style={{ fontSize: 11, color: "#94a3b8" }}>Công dân</div>
+       <div style={{ padding: "16px 20px", borderTop: "1px solid #f1f5f9" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "white", fontWeight: 700 }}>
+            {user?.name?.charAt(0) || "A"}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#0f172a" }}>{user?.name}</div>
+            <div style={{ fontSize: 11, color: "#94a3b8" }}>{user?.role === "citizen" ? "Công dân" : "Cán bộ"}</div>
+          </div>
         </div>
+        <button onClick={onLogout} style={{ width: "100%", padding: "7px", borderRadius: 6, border: "1px solid #e2e8f0", background: "transparent", fontSize: 12, color: "#64748b", cursor: "pointer" }}>
+          Đăng xuất
+        </button>
       </div>
     </div>
-  )
-}
-
+    )
+  }
+    
 function Card({ children, style }) {
   return (
     <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 12, padding: "28px 32px", ...style }}>
@@ -163,25 +232,66 @@ function UploadPage() {
 }
 
 function SignPage() {
+  const [file, setFile] = useState(null)
   const [state, setState] = useState("idle")
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState("")
+
+  const handleSign = async () => {
+    setState("signing")
+    setError("")
+    try {
+      const formData = new FormData()
+      formData.append("pdf", file)
+      const res = await fetch(`${API}/api/documents/sign`, {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+        body: formData
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || data.detail); setState("idle"); return }
+      setResult(data)
+      setState("done")
+    } catch {
+      setError("Không kết nối được server!")
+      setState("idle")
+    }
+  }
+
   return (
     <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Ký số tài liệu</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Ký PDF bằng RSA-PSS 2048-bit + SHA-256</p>
       <Card>
-        <div style={{ marginBottom: 20 }}>
-          <Row label="Tên file" value="don_xin_cap_phep.pdf" />
-          <Row label="Người ký" value="Nguyễn Văn A" />
-          <Row label="Chứng thư" value="0A:1B:2C:3D" />
-          <Row label="Thuật toán" value="RSA-PSS 2048 + SHA-256" />
-        </div>
-        <Btn onClick={() => { setState("signing"); setTimeout(() => setState("done"), 2000) }} disabled={state !== "idle"}>
+        <label style={{
+          display: "block", border: "1.5px dashed #cbd5e1", borderRadius: 8,
+          padding: "36px 16px", textAlign: "center", cursor: "pointer",
+          background: file ? "#f0fdf4" : "#fafafa", marginBottom: 16,
+          borderColor: file ? "#86efac" : "#cbd5e1"
+        }}>
+          <div style={{ fontSize: 28, marginBottom: 6 }}>📁</div>
+          <div style={{ fontSize: 13, color: file ? "#166534" : "#64748b", fontWeight: file ? 600 : 400 }}>
+            {file ? file.name : "Bấm để chọn file PDF cần ký"}
+          </div>
+          {!file && <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4 }}>Chỉ chấp nhận .pdf</div>}
+          <input type="file" accept=".pdf" onChange={e => { setFile(e.target.files[0]); setState("idle"); setResult(null) }} style={{ display: "none" }} />
+        </label>
+        {file && state === "idle" && (
+          <div style={{ marginBottom: 16 }}>
+            <Row label="Người ký" value={localStorage.getItem("name")} />
+            <Row label="Thuật toán" value="RSA-PSS 2048 + SHA-256" />
+          </div>
+        )}
+        {error && <div style={{ marginBottom: 12, padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, fontSize: 12, color: "#dc2626" }}>{error}</div>}
+        <Btn onClick={handleSign} disabled={!file || state !== "idle"}>
           {state === "signing" ? "Đang ký..." : state === "done" ? "✓ Đã ký thành công" : "Ký số"}
         </Btn>
-        {state === "done" && (
+        {result && (
           <div style={{ marginTop: 16, padding: "12px 14px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8 }}>
-            <div style={{ fontWeight: 600, fontSize: 13, color: "#166534", marginBottom: 4 }}>✓ Ký số thành công</div>
-            <div style={{ fontSize: 12, color: "#64748b" }}>Thời gian ký: 4.2 ms · Signed PDF đã lưu</div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: "#166534", marginBottom: 8 }}>✓ Ký số thành công</div>
+            <Row label="Người ký" value={result.signer} />
+            <Row label="Thời gian ký" value={`${result.signingTime} ms`} />
+            <Row label="Thuật toán" value={result.algorithm} />
           </div>
         )}
       </Card>
@@ -193,6 +303,27 @@ function VerifyPage() {
   const [file, setFile] = useState(null)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const handleVerify = async () => {
+    setLoading(true)
+    setError("")
+    setResult(null)
+    try {
+      const formData = new FormData()
+      formData.append("pdf", file)
+      const res = await fetch(`${API}/api/documents/verify`, {
+        method: "POST",
+        body: formData
+      })
+      const data = await res.json()
+      setResult(data)
+    } catch {
+      setError("Không kết nối được server!")
+    }
+    setLoading(false)
+  }
+
   return (
     <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Xác minh chữ ký</h2>
@@ -206,20 +337,33 @@ function VerifyPage() {
           <div style={{ fontSize: 13, color: "#64748b" }}>{file ? file.name : "Chọn file PDF đã ký"}</div>
           <input type="file" accept=".pdf" onChange={e => { setFile(e.target.files[0]); setResult(null) }} style={{ display: "none" }} />
         </label>
-        <Btn onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setResult("valid") }, 1500) }} disabled={!file || loading}>
+        {error && <div style={{ marginBottom: 12, padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, fontSize: 12, color: "#dc2626" }}>{error}</div>}
+        <Btn onClick={handleVerify} disabled={!file || loading}>
           {loading ? "Đang xác minh..." : "Xác minh"}
         </Btn>
-        {result === "valid" && (
-          <div style={{ marginTop: 16, padding: "14px 16px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8 }}>
+        {result && (
+          <div style={{
+            marginTop: 16, padding: "14px 16px", borderRadius: 8,
+            background: result.valid ? "#f0fdf4" : "#fef2f2",
+            border: `1px solid ${result.valid ? "#bbf7d0" : "#fecaca"}`
+          }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-              <Badge color="green">VALID</Badge>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#166534" }}>Chữ ký hợp lệ</span>
+              <Badge color={result.valid ? "green" : "red"}>{result.valid ? "VALID" : "INVALID"}</Badge>
+              <span style={{ fontSize: 13, fontWeight: 600, color: result.valid ? "#166534" : "#991b1b" }}>
+                {result.valid ? "Chữ ký hợp lệ" : "Chữ ký không hợp lệ"}
+              </span>
             </div>
-            <Row label="Người ký" value="Nguyễn Văn A" />
-            <Row label="Email" value="nguyenvana@citizen.vn" />
-            <Row label="Thời điểm ký" value="2025-10-15 09:30:00" />
-            <Row label="Chuỗi CA" value="✓ Hợp lệ" />
-            <Row label="Trạng thái cert" value="✓ Chưa thu hồi" />
+            {result.valid ? (
+              <>
+                <Row label="Người ký" value={result.signer || "—"} />
+                <Row label="Thời điểm ký" value={result.signedAt || "—"} />
+                <Row label="Thuật toán" value={result.algorithm || "—"} />
+                <Row label="Tài liệu nguyên vẹn" value={result.intactDocument ? "✓ Có" : "✗ Không"} />
+                <Row label="Cert tin cậy" value={result.certTrusted ? "✓ Có" : "⚠ Chưa xác nhận"} />
+              </>
+            ) : (
+              <div style={{ fontSize: 12, color: "#991b1b" }}>{result.reason || "Chữ ký không hợp lệ hoặc tài liệu bị sửa"}</div>
+            )}
           </div>
         )}
       </Card>
@@ -228,36 +372,73 @@ function VerifyPage() {
 }
 
 function CertPage() {
+  const [cert, setCert] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const fetchCert = async () => {
+    setLoading(true)
+    setError("")
+    const role = localStorage.getItem("role")
+    const serial = role === "citizen" ? "01" : "02"
+    try {
+      const res = await fetch(`${API}/api/certificate/${serial}`, {
+        headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error); setLoading(false); return }
+      setCert(data)
+    } catch {
+      setError("Không kết nối được server!")
+    }
+    setLoading(false)
+  }
+
+  // Tự load khi vào trang
+  useState(() => { fetchCert() }, [])
+
   return (
     <div style={{ paddingTop: 40, maxWidth: 600 }}>
       <h2 style={{ fontSize: 18, fontWeight: 700, color: "#0f172a", marginBottom: 4 }}>Chứng thư số X.509</h2>
       <p style={{ color: "#64748b", fontSize: 13, marginBottom: 24 }}>Chi tiết certificate của người ký</p>
       <Card>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #f1f5f9" }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
-          <div>
-            <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a" }}>Nguyễn Văn A</div>
-            <div style={{ fontSize: 12, color: "#64748b" }}>nguyenvana@citizen.vn</div>
-          </div>
-          <Badge color="green">Còn hiệu lực</Badge>
-        </div>
-        <Row label="Subject" value="CN=Nguyễn Văn A, C=VN" />
-        <Row label="Issuer" value="CN=Demo Root CA, O=UIT Lab" />
-        <Row label="Serial Number" value="0A:1B:2C:3D:4E:5F" />
-        <Row label="Hiệu lực từ" value="2025-01-01" />
-        <Row label="Hiệu lực đến" value="2026-12-31" />
-        <Row label="Key Usage" value="Digital Signature, Non-Repudiation" />
-        <Row label="Thuật toán" value="RSA-PSS 2048-bit + SHA-256" />
+        {loading && <div style={{ textAlign: "center", color: "#64748b", fontSize: 13, padding: 20 }}>Đang tải...</div>}
+        {error && <div style={{ padding: "8px 12px", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, fontSize: 12, color: "#dc2626" }}>{error}</div>}
+        {cert && (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #f1f5f9" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #1e40af, #3b82f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>👤</div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "#0f172a" }}>{localStorage.getItem("name")}</div>
+              </div>
+              <Badge color={cert.status === "active" ? "green" : "red"}>
+                {cert.status === "active" ? "Còn hiệu lực" : "Đã thu hồi"}
+              </Badge>
+            </div>
+            <Row label="Subject" value={cert.subject} />
+            <Row label="Issuer" value={cert.issuer} />
+            <Row label="Serial Number" value={cert.serial} />
+            <Row label="Hiệu lực từ" value={cert.validFrom} />
+            <Row label="Hiệu lực đến" value={cert.validUntil} />
+            <Row label="Key Usage" value={cert.keyUsage} />
+            <Row label="Thuật toán" value={cert.algorithm} />
+          </>
+        )}
       </Card>
     </div>
   )
 }
-
 export default function App() {
+  const [user, setUser] = useState(
+    localStorage.getItem("token") ? { name: localStorage.getItem("name"), role: localStorage.getItem("role") } : null
+  )
+
+  if (!user) return <LoginPage onLogin={setUser} />
+
   return (
     <BrowserRouter>
       <div style={{ display: "flex", minHeight: "100vh", background: "#f8fafc" }}>
-        <Sidebar />
+        <Sidebar user={user} onLogout={() => { localStorage.clear(); setUser(null) }} />
         <div style={{ flex: 1, padding: "0 48px 64px" }}>
           <Routes>
             <Route path="/" element={<Home />} />
